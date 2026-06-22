@@ -524,16 +524,55 @@
         const columns = canvas.width / fontSize;
         const rainDrops = Array.from({ length: columns }).fill(canvas.height);
 
+        // Mouse tracking for interactive distortion
+        let mouse = { x: undefined, y: undefined, radius: 100 };
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = event.clientX;
+            mouse.y = event.clientY;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = undefined;
+            mouse.y = undefined;
+        });
+
         function draw() {
             ctx.fillStyle = "rgba(5, 5, 5, 0.05)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = "#00FF00";
             ctx.font = fontSize + "px 'JetBrains Mono', monospace";
 
             for (let i = 0; i < rainDrops.length; i++) {
+                const x = i * fontSize;
+                const y = rainDrops[i] * fontSize;
                 const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+
+                let isNearMouse = false;
+                let offsetX = 0;
+                let offsetY = 0;
+
+                if (mouse.x !== undefined && mouse.y !== undefined) {
+                    const dx = x - mouse.x;
+                    const dy = y - mouse.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouse.radius) {
+                        isNearMouse = true;
+                        const force = (mouse.radius - distance) / mouse.radius;
+                        offsetX = (dx / (distance || 1)) * force * 12;
+                        offsetY = (dy / (distance || 1)) * force * 12;
+                    }
+                }
+
+                if (isNearMouse) {
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = "#00FF00";
+                } else {
+                    ctx.fillStyle = "#00FF00";
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.fillText(text, x + offsetX, y + offsetY);
+                ctx.shadowBlur = 0;
 
                 if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
                     rainDrops[i] = 0;
