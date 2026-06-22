@@ -1,0 +1,8 @@
+{
+  "name": "portfolio",
+  "version": "1.0.0",
+  "description": "Karl Calimotan Portfolio",
+  "scripts": {
+    "dev": "npx http-server -p 3000"
+  }
+}
